@@ -1,92 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Work Tracker</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Work Tracker — Multiuser</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Daily Work Tracker</h1>
-            <p class="subtitle">Track, manage, and review your daily accomplishments</p>
-        </header>
-        
-        <div class="app-container">
-            <section class="form-section">
-                <div class="form-header">
-                    <h2 class="form-title">Add New Entry</h2>
-                </div>
-                
-                <form id="entry-form">
-                    <div class="form-group">
-                        <label for="entry-date">Date</label>
-                        <input type="date" id="entry-date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="entry-title">Title</label>
-                        <input type="text" id="entry-title" placeholder="Enter work title" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="entry-description">Description</label>
-                        <textarea id="entry-description" placeholder="Describe what you worked on..." required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Save Entry</button>
-                </form>
-            </section>
-            
-            <section class="entries-section">
-                <div class="entries-header">
-                    <h2 class="entries-title">Your Entries</h2>
-                    <div class="search-box">
-                        <input type="text" id="search-input" placeholder="Search entries...">
-                        <button class="btn btn-info" id="search-btn">Search</button>
-                    </div>
-                </div>
-                
-                <div class="entries-list" id="entries-list"></div>
-            </section>
-        </div>
-    </div>
-    
-    <!-- Modal for Edit -->
-    <div class="modal" id="edit-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Edit Entry</h2>
-                <button class="modal-close" id="edit-modal-close">&times;</button>
+  <div class="container">
+    <header>
+      <h1>Daily Work Tracker</h1>
+      <p class="subtitle">Track, manage, and review your daily accomplishments</p>
+
+      <!-- user bar (shown when logged in) -->
+      <div id="user-bar" style="display:none; margin-top:10px;">
+        Logged in as <strong id="user-name"></strong>
+        <button class="btn btn-danger" id="logout-btn" style="margin-left:12px;">Logout</button>
+      </div>
+    </header>
+
+    <!-- AUTH UI -->
+    <section id="auth-container" class="form-section">
+      <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+        <!-- LOGIN -->
+        <div class="auth-box" id="login-box" style="flex:1; min-width:260px;">
+          <h2 class="form-title">Login</h2>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-username">Email / Username</label>
+              <input id="login-username" required placeholder="you@example.com" />
             </div>
-            
-            <form id="edit-form">
-                <input type="hidden" id="edit-id">
-                
-                <div class="form-group">
-                    <label for="edit-date">Date</label>
-                    <input type="date" id="edit-date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-title">Title</label>
-                    <input type="text" id="edit-title" placeholder="Enter work title" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-description">Description</label>
-                    <textarea id="edit-description" placeholder="Describe what you worked on..." required></textarea>
-                </div>
-                
-                <div class="footer-actions">
-                    <button type="button" class="btn btn-danger" id="delete-btn">Delete</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input id="login-password" type="password" required />
+            </div>
+            <div class="form-group">
+              <label><input type="checkbox" id="remember-me" /> Remember me</label>
+            </div>
+            <button class="btn btn-primary" type="submit">Login</button>
+            <p style="margin-top:.75rem;">Don't have an account? <a href="#" id="show-register">Register</a></p>
+          </form>
         </div>
+
+        <!-- REGISTER -->
+        <div class="auth-box" id="register-box" style="flex:1; min-width:260px; display:none;">
+          <h2 class="form-title">Register</h2>
+          <form id="register-form">
+            <div class="form-group">
+              <label for="register-username">Email / Username</label>
+              <input id="register-username" required placeholder="you@example.com" />
+            </div>
+            <div class="form-group">
+              <label for="register-password">Password</label>
+              <input id="register-password" type="password" required />
+            </div>
+            <div class="form-group">
+              <label for="register-password2">Confirm Password</label>
+              <input id="register-password2" type="password" required />
+            </div>
+            <button class="btn btn-success" type="submit">Create account</button>
+            <p style="margin-top:.75rem;">Already have an account? <a href="#" id="show-login">Login</a></p>
+          </form>
+        </div>
+      </div>
+      <small style="display:block; margin-top:12px; color:#6c757d;">
+        Note: This demo stores users (hashed) locally in your browser storage.
+      </small>
+    </section>
+
+    <!-- APP: your original UI (hidden until login) -->
+    <div class="app-container" id="app-root" style="display:none;">
+      <!-- (copy of your original Add Entry + Entries sections) -->
+      <section class="form-section">
+        <div class="form-header">
+          <h2 class="form-title">Add New Entry</h2>
+        </div>
+
+        <form id="entry-form">
+          <div class="form-group">
+            <label for="entry-date">Date</label>
+            <input type="date" id="entry-date" required>
+          </div>
+
+          <div class="form-group">
+            <label for="entry-title">Title</label>
+            <input type="text" id="entry-title" placeholder="Enter work title" required>
+          </div>
+
+          <div class="form-group">
+            <label for="entry-description">Description</label>
+            <textarea id="entry-description" placeholder="Describe what you worked on..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Entry</button>
+        </form>
+      </section>
+
+      <section class="entries-section">
+        <div class="entries-header">
+          <h2 class="entries-title">Your Entries</h2>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search entries...">
+            <button class="btn btn-info" id="search-btn">Search</button>
+          </div>
+        </div>
+
+        <div class="entries-list" id="entries-list"></div>
+      </section>
     </div>
-    
-    <script src="script.js"></script>
+  </div>
+
+  <!-- Modal for Edit (same as before) -->
+  <div class="modal" id="edit-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Entry</h2>
+        <button class="modal-close" id="edit-modal-close">&times;</button>
+      </div>
+
+      <form id="edit-form">
+        <input type="hidden" id="edit-id">
+
+        <div class="form-group">
+          <label for="edit-date">Date</label>
+          <input type="date" id="edit-date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-title">Title</label>
+          <input type="text" id="edit-title" placeholder="Enter work title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-description">Description</label>
+          <textarea id="edit-description" placeholder="Describe what you worked on..." required></textarea>
+        </div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn btn-danger" id="delete-btn">Delete</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
-                </html>
+</html>

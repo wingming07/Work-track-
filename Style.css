@@ -249,7 +249,10 @@ textarea {
     gap: 0.5rem;
     margin-top: 1.5rem;
 }
-
+/* small auth & user-bar tweaks */
+.auth-box { padding:1rem; background:white; border-radius:8px; box-shadow:0 3px 6px rgba(0,0,0,0.04); }
+#auth-container { margin-bottom:1.25rem; }
+#user-bar { display:flex; align-items:center; gap:8px; }
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
